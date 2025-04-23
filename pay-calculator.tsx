@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
@@ -24,7 +24,6 @@ const roles = [
 ]
 
 const seniorities = ["Junior", "Intermediate", "Senior", "Staff", "Lead", "Director"]
-//comment
 
 const performances = [
   { label: "Learning", value: 0.9 },
@@ -104,7 +103,28 @@ export default function PayCalculator() {
   const [location, setLocation] = useState("Germany")
   const [salaryEUR, setSalaryEUR] = useState("0")
   const [salaryUSD, setSalaryUSD] = useState("0")
-  const [message, setMessage] = useState("")
+  
+  // Get available seniorities for the selected role
+  const availableSeniorities = useMemo(() => {
+    return seniorities.map((seniority, index) => {
+      const exists = salaries.some((s) => s.role === role && s.seniority === seniority)
+      return { seniority, index, available: exists }
+    })
+  }, [role])
+
+  // Update seniority index when role changes to ensure it's valid
+  useEffect(() => {
+    const currentSeniority = seniorities[seniorityIndex]
+    const isSeniorityAvailable = salaries.some((s) => s.role === role && s.seniority === currentSeniority)
+
+    if (!isSeniorityAvailable) {
+      // Find the first available seniority for this role
+      const firstAvailable = availableSeniorities.find((s) => s.available)
+      if (firstAvailable) {
+        setSeniorityIndex(firstAvailable.index)
+      }
+    }
+  }, [role, availableSeniorities])
 
   useEffect(() => {
     calculate()
@@ -116,24 +136,29 @@ export default function PayCalculator() {
     const salaryEntry = salaries.find((s) => s.role === role && s.seniority === seniority)
 
     if (salaryEntry) {
-      const locationEntry = locations.find(l => l.label === location)
-      let locationFactor = locationEntry ? parseFloat(locationEntry.value) : 1
+      const locationEntry = locations.find((l) => l.label === location)
+      let locationFactor = locationEntry ? Number.parseFloat(locationEntry.value) : 1
       if (role === "Account Executive") {
         locationFactor = Math.min(1.2, locationFactor)
       }
 
-      const salaryInEUR = parseFloat(salaryEntry.salary) * performance * locationFactor
+      const salaryInEUR = Number.parseFloat(salaryEntry.salary) * performance * locationFactor
       setSalaryEUR(Math.trunc(salaryInEUR).toLocaleString())
       setSalaryUSD(Math.trunc(salaryInEUR * 1.059592).toLocaleString())
-      setMessage("")
-    } else {
-      setSalaryEUR("N/A")
-      setSalaryUSD("N/A")
-      setMessage("Unfortunately, we don't have this combination of role and seniority, so we can't give you a salary amount.")
     }
-    
   }
 
+  // Handle seniority change with validation
+  const handleSeniorityChange = (value: number[]) => {
+    const newIndex = value[0]
+    const seniority = seniorities[newIndex]
+    const isAvailable = salaries.some((s) => s.role === role && s.seniority === seniority)
+
+    if (isAvailable) {
+      setSeniorityIndex(newIndex)
+    }
+  }
+  
   return (
     <div className="min-h-screen bg-[rgb(4,23,52)] flex items-center justify-center p-4 font-sans">
       <Card className="w-full max-w-2xl bg-white shadow-xl">
@@ -157,9 +182,14 @@ export default function PayCalculator() {
             transition={{ duration: 0.5 }}
           >
             <div className="grid gap-2">
-              <Label htmlFor="role" className="text-gray-700">Role</Label>
+              <Label htmlFor="role" className="text-gray-700">
+                Role
+              </Label>
               <Select onValueChange={setRole} value={role}>
-                <SelectTrigger id="role" className="bg-white text-gray-800 border-gray-300 focus:ring-2 focus:ring-[rgb(4,23,52)]">
+                <SelectTrigger
+                  id="role"
+                  className="bg-white text-gray-800 border-gray-300 focus:ring-2 focus:ring-[rgb(4,23,52)]"
+                >
                   <SelectValue placeholder="Select a role" />
                 </SelectTrigger>
                 <SelectContent className="bg-white text-gray-800 border-gray-300">
@@ -172,7 +202,9 @@ export default function PayCalculator() {
               </Select>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="seniority" className="text-gray-700">Seniority: {seniorities[seniorityIndex]}</Label>
+              <Label htmlFor="seniority" className="text-gray-700">
+                Seniority: {seniorities[seniorityIndex]}
+              </Label>
               <div className="pt-6 px-2">
                 <Slider
                   id="seniority"
@@ -180,20 +212,32 @@ export default function PayCalculator() {
                   max={seniorities.length - 1}
                   step={1}
                   value={[seniorityIndex]}
-                  onValueChange={(value) => setSeniorityIndex(value[0])}
+                  onValueChange={handleSeniorityChange}
                   className="[&_[role=slider]]:bg-[rgb(4,23,52)] [&::-webkit-slider-thumb]:bg-[rgb(4,23,52)] [&::-moz-range-thumb]:bg-[rgb(4,23,52)]"
                 />
                 <div className="flex justify-between mt-2 text-xs text-gray-600">
-                  {seniorities.map((s, index) => (
-                    <span key={s} className={`${index === seniorityIndex ? 'text-[rgb(4,23,52)] font-bold' : ''}`}>
+                  {seniorities.map((s, index) => {
+                    const isAvailable = availableSeniorities.find((as) => as.index === index)?.available
+                    return (
+                      <span
+                        key={s}
+                        className={`
+                          ${index === seniorityIndex ? "text-[rgb(4,23,52)] font-bold" : ""}
+                          ${!isAvailable ? "text-gray-300 cursor-not-allowed" : "cursor-pointer"}
+                        `}
+                        onClick={() => isAvailable && setSeniorityIndex(index)}
+                      >
                       {s}
                     </span>
-                  ))}
+                    )
+                  })}
                 </div>
               </div>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="performance" className="text-gray-700">Performance: {performances[performanceIndex].label}</Label>
+              <Label htmlFor="performance" className="text-gray-700">
+                Performance: {performances[performanceIndex].label}
+              </Label>
               <div className="pt-6 px-2">
                 <Slider
                   id="performance"
@@ -206,7 +250,10 @@ export default function PayCalculator() {
                 />
                 <div className="flex justify-between mt-2 text-xs text-gray-600">
                   {performances.map((p, index) => (
-                    <span key={p.label} className={`${index === performanceIndex ? 'text-[rgb(4,23,52)] font-bold' : ''}`}>
+                    <span
+                      key={p.label}
+                      className={`${index === performanceIndex ? "text-[rgb(4,23,52)] font-bold" : ""}`}
+                    >
                       {p.label}
                     </span>
                   ))}
@@ -214,10 +261,15 @@ export default function PayCalculator() {
               </div>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="location" className="text-gray-700">Location</Label>
+              <Label htmlFor="location" className="text-gray-700">
+                Location
+              </Label>
               <Select onValueChange={setLocation} value={location}>
-                <SelectTrigger id="location" className="bg-white text-gray-800 border-gray-300 focus:ring-2
-focus:ring-[rgb(4,23,52)]">
+                <SelectTrigger
+                  id="location"
+                  className="bg-white text-gray-800 border-gray-300 focus:ring-2
+focus:ring-[rgb(4,23,52)]"
+                >
                   <SelectValue placeholder="Select a location" />
                 </SelectTrigger>
                 <SelectContent className="bg-white text-gray-800 border-gray-300 max-h-[200px] overflow-y-auto">
@@ -238,7 +290,6 @@ focus:ring-[rgb(4,23,52)]">
               <p className="text-3xl font-bold text-[rgb(4,23,52)]">
                 USD {salaryUSD} / EUR {salaryEUR}
               </p>
-              {message && <p className="mt-2 text-red-600">{message}</p>}
             </motion.div>
           </motion.div>
           <div className="mt-8 text-sm text-gray-600">
