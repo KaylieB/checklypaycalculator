@@ -63,6 +63,7 @@ const salaries = [
   { role: "Design", seniority: "Junior", salary: "55080" },
   { role: "Design", seniority: "Intermediate", salary: "73440" },
   { role: "Design", seniority: "Senior", salary: "91800" },
+  { role: "Design", seniority: "Staff", salary: "123333" },
   { role: "Product Management", seniority: "Junior", salary: "59250" },
   { role: "Product Management", seniority: "Intermediate", salary: "79000" },
   { role: "Product Management", seniority: "Senior", salary: "98750" },
