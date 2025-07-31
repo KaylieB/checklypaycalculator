@@ -74,9 +74,9 @@ const salaries = [
   { role: "SDR", seniority: "Junior", salary: "36750" },
   { role: "SDR", seniority: "Intermediate", salary: "49000" },
   { role: "SDR", seniority: "Senior", salary: "61250" },
-  { role: "Account Executive", seniority: "Junior", salary: "68586.54" },
-  { role: "Account Executive", seniority: "Intermediate", salary: "91448.72" },
-  { role: "Account Executive", seniority: "Senior", salary: "114310.90" },
+  { role: "Account Executive", seniority: "Junior", salary: "67215.44" },
+  { role: "Account Executive", seniority: "Intermediate", salary: "89620.59" },
+  { role: "Account Executive", seniority: "Senior", salary: "112025.74" },
   { role: "Customer Solutions", seniority: "Junior", salary: "63293" },
   { role: "Customer Solutions", seniority: "Intermediate", salary: "84391" },
   { role: "Customer Solutions", seniority: "Senior", salary: "105489" },
@@ -145,7 +145,7 @@ export default function PayCalculator() {
 
       const salaryInEUR = Number.parseFloat(salaryEntry.salary) * performance * locationFactor
       setSalaryEUR(Math.trunc(salaryInEUR).toLocaleString())
-      setSalaryUSD(Math.trunc(salaryInEUR * 1.093509).toLocaleString())
+      setSalaryUSD(Math.trunc(salaryInEUR * 1.115815).toLocaleString())
     }
   }
 
