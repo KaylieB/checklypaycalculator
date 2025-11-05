@@ -26,9 +26,9 @@ const roles = [
 const seniorities = ["Junior", "Intermediate", "Senior", "Staff", "Lead", "Director"]
 
 const performances = [
-  { label: "Learning", value: 0.9 },
-  { label: "Comfortable", value: 1 },
-  { label: "Thriving", value: 1.1 },
+  { label: "1", value: 0.9 },
+  { label: "2", value: 1 },
+  { label: "3", value: 1.1 },
 ]
 
 const locations = [
