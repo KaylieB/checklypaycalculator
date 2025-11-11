@@ -26,9 +26,9 @@ const roles = [
 const seniorities = ["Junior", "Intermediate", "Senior", "Staff", "Lead", "Director"]
 
 const performances = [
-  { label: "1", value: 0.9 },
-  { label: "2", value: 1 },
-  { label: "3", value: 1.1 },
+  { label: "1", minValue: 0.85, maxValue: 0.94  },
+  { label: "2", minValue: 0.95, maxValue: 1.04 },
+  { label: "3", minValue: 1.05, maxValue: 1.1 },
 ]
 
 const locations = [
@@ -102,8 +102,10 @@ export default function PayCalculator() {
   const [seniorityIndex, setSeniorityIndex] = useState(2) // Senior
   const [performanceIndex, setPerformanceIndex] = useState(1) // Comfortable
   const [location, setLocation] = useState("Germany")
-  const [salaryEUR, setSalaryEUR] = useState("0")
-  const [salaryUSD, setSalaryUSD] = useState("0")
+  const [salaryEURMin, setSalaryEURMin] = useState("0")
+  const [salaryEURMax, setSalaryEURMax] = useState("0")
+  const [salaryUSDMin, setSalaryUSDMin] = useState("0")
+  const [salaryUSDMax, setSalaryUSDMax] = useState("0")
   
   // Get available seniorities for the selected role
   const availableSeniorities = useMemo(() => {
@@ -133,7 +135,7 @@ export default function PayCalculator() {
 
   const calculate = () => {
     const seniority = seniorities[seniorityIndex]
-    const performance = performances[performanceIndex].value
+    const performance = performances[performanceIndex]
     const salaryEntry = salaries.find((s) => s.role === role && s.seniority === seniority)
 
     if (salaryEntry) {
@@ -143,9 +145,16 @@ export default function PayCalculator() {
         locationFactor = Math.min(1.2, locationFactor)
       }
 
-      const salaryInEUR = Number.parseFloat(salaryEntry.salary) * performance * locationFactor
-      setSalaryEUR(Math.trunc(salaryInEUR).toLocaleString())
-      setSalaryUSD(Math.trunc(salaryInEUR * 1.158795).toLocaleString())
+      const baseSalary = Number.parseFloat(salaryEntry.salary)
+
+      // Calculate min and max salaries in EUR
+      const salaryInEURMin = baseSalary * performance.minValue * locationFactor
+      const salaryInEURMax = baseSalary * performance.maxValue * locationFactor
+
+      setSalaryEURMin(Math.trunc(salaryInEURMin).toLocaleString())
+      setSalaryEURMax(Math.trunc(salaryInEURMax).toLocaleString())
+      setSalaryUSDMin(Math.trunc(salaryInEURMin * 1.087898).toLocaleString())
+      setSalaryUSDMax(Math.trunc(salaryInEURMax * 1.087898).toLocaleString())
     }
   }
 
@@ -268,8 +277,7 @@ export default function PayCalculator() {
               <Select onValueChange={setLocation} value={location}>
                 <SelectTrigger
                   id="location"
-                  className="bg-white text-gray-800 border-gray-300 focus:ring-2
-focus:ring-[rgb(4,23,52)]"
+                  className="bg-white text-gray-800 border-gray-300 focus:ring-2 focus:ring-[rgb(4,23,52)]"
                 >
                   <SelectValue placeholder="Select a location" />
                 </SelectTrigger>
@@ -289,7 +297,10 @@ focus:ring-[rgb(4,23,52)]"
             >
               <p className="text-lg font-semibold mb-2 text-gray-700">Annual base salary:</p>
               <p className="text-3xl font-bold text-[rgb(4,23,52)]">
-                USD {salaryUSD} / EUR {salaryEUR}
+                USD {salaryUSDMin} - {salaryUSDMax}
+              </p>
+              <p className="text-3xl font-bold text-[rgb(4,23,52)] mt-2">
+                EUR {salaryEURMin} - {salaryEURMax}
               </p>
             </motion.div>
           </motion.div>
