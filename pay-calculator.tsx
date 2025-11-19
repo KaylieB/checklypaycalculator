@@ -153,8 +153,8 @@ export default function PayCalculator() {
 
       setSalaryEURMin(Math.trunc(salaryInEURMin).toLocaleString())
       setSalaryEURMax(Math.trunc(salaryInEURMax).toLocaleString())
-      setSalaryUSDMin(Math.trunc(salaryInEURMin * 1.087898).toLocaleString())
-      setSalaryUSDMax(Math.trunc(salaryInEURMax * 1.087898).toLocaleString())
+      setSalaryUSDMin(Math.trunc(salaryInEURMin * 1.158795).toLocaleString())
+      setSalaryUSDMax(Math.trunc(salaryInEURMax * 1.158795).toLocaleString())
     }
   }
 
